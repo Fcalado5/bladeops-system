@@ -41,7 +41,7 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-aapp.use(cors({
+app.use(cors({
   origin: process.env.NODE_ENV === 'production'
     ? [
         'https://bladeops.ao',
