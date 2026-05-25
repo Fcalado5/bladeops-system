@@ -41,9 +41,13 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-app.use(cors({
+aapp.use(cors({
   origin: process.env.NODE_ENV === 'production'
-    ? ['https://bladeops.ao', 'https://app.bladeops.ao']
+    ? [
+        'https://bladeops.ao',
+        'https://app.bladeops.ao',
+        'https://bladeops-frontend.vercel.app'
+      ]
     : '*',
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
