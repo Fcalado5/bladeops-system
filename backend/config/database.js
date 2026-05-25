@@ -1,23 +1,30 @@
 // ===========================================
 // BLADEOPS — Database Configuration
 // ===========================================
-
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT) || 5432,
-  database: process.env.DB_NAME || 'bladeops',
-  user: process.env.DB_USER || 'postgres',
-  password: String(process.env.DB_PASSWORD),
-  ssl: false,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-  keepAlive: true,
-  keepAliveInitialDelayMillis: 10000,
-});
+// Usa DATABASE_URL directamente se disponível (Supabase/cloud)
+const pool = process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    })
+  : new Pool({
+      host:     process.env.DB_HOST     || 'localhost',
+      port:     parseInt(process.env.DB_PORT) || 5432,
+      database: process.env.DB_NAME     || 'bladeops',
+      user:     process.env.DB_USER     || 'postgres',
+      password: String(process.env.DB_PASSWORD),
+      ssl: false,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+      keepAlive: true,
+    });
 
 pool.on('connect', () => {
   if (process.env.NODE_ENV !== 'production') {
@@ -29,7 +36,6 @@ pool.on('error', (err) => {
   console.error('❌ Database error:', err.message);
 });
 
-// Query helper
 const query = async (text, params) => {
   const start = Date.now();
   try {
@@ -45,7 +51,6 @@ const query = async (text, params) => {
   }
 };
 
-// Transaction helper
 const transaction = async (callback) => {
   const client = await pool.connect();
   try {

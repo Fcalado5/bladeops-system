@@ -7,11 +7,11 @@ export function Button({
   style, icon,
 }) {
   const variants = {
-    primary:  { bg: 'linear-gradient(135deg,var(--ocean-dark),var(--ocean))', color: '#fff', border: 'none', shadow: '0 3px 10px rgba(0,119,182,.3)' },
+    primary:  { bg: 'linear-gradient(135deg,#0077ff,var(--ocean))', color: '#fff', border: '1px solid rgba(112,215,255,.18)', shadow: '0 0 22px rgba(0,168,255,.22)' },
     success:  { bg: 'linear-gradient(135deg,#0F6B4F,var(--success))', color: '#fff', border: 'none', shadow: '0 3px 10px rgba(26,147,111,.25)' },
     danger:   { bg: 'linear-gradient(135deg,#8B0000,var(--danger))', color: '#fff', border: 'none', shadow: '0 3px 10px rgba(193,18,31,.25)' },
     warning:  { bg: 'linear-gradient(135deg,#B07800,var(--warning))', color: '#fff', border: 'none', shadow: 'none' },
-    ghost:    { bg: '#fff', color: 'var(--ocean)', border: '1.5px solid var(--ocean)', shadow: 'none' },
+    ghost:    { bg: 'rgba(255,255,255,.03)', color: 'var(--text-sec)', border: '1px solid var(--border)', shadow: 'none' },
     subtle:   { bg: 'var(--bg-muted)', color: 'var(--text-sec)', border: '1px solid var(--border)', shadow: 'none' },
   };
   const sizes = {
@@ -49,7 +49,7 @@ export function Button({
 export function Card({ children, style, padding = 20 }) {
   return (
     <div style={{
-      background: 'var(--bg)',
+      background: 'linear-gradient(180deg, var(--bg-elevated), var(--bg))',
       border: '1px solid var(--border)',
       borderRadius: 'var(--radius-lg)',
       padding,
@@ -154,7 +154,7 @@ export function Input({ style, hasError, ...props }) {
         width: '100%', padding: '8px 11px',
         border: `1.5px solid ${hasError ? 'var(--danger)' : 'var(--border)'}`,
         borderRadius: 8, fontSize: 13,
-        background: 'var(--bg-surface)', color: 'var(--text)',
+        background: 'var(--bg-muted)', color: 'var(--text)' ,
         outline: 'none', transition: 'border-color .15s',
         fontFamily: 'inherit',
         ...style,
@@ -174,7 +174,7 @@ export function Select({ style, hasError, children, ...props }) {
         width: '100%', padding: '8px 11px',
         border: `1.5px solid ${hasError ? 'var(--danger)' : 'var(--border)'}`,
         borderRadius: 8, fontSize: 13,
-        background: 'var(--bg-surface)', color: 'var(--text)',
+        background: 'var(--bg-muted)', color: 'var(--text)' ,
         outline: 'none', fontFamily: 'inherit', cursor: 'pointer',
         ...style,
       }}
@@ -193,7 +193,7 @@ export function Textarea({ style, ...props }) {
         width: '100%', padding: '8px 11px',
         border: '1.5px solid var(--border)',
         borderRadius: 8, fontSize: 13,
-        background: 'var(--bg-surface)', color: 'var(--text)',
+        background: 'var(--bg-muted)', color: 'var(--text)' ,
         outline: 'none', fontFamily: 'inherit', resize: 'vertical', minHeight: 72,
         ...style,
       }}
@@ -269,10 +269,10 @@ export function Table({ columns, rows, onRowClick, emptyMessage = 'No data' }) {
           style={{ width: 200 }}
         />
       </div>
-      <div style={{ overflowX: 'auto', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+      <div style={{ overflowX: 'auto', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background:'var(--bg)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ background: 'var(--bg-muted)', borderBottom: '2px solid var(--border)' }}>
+            <tr style={{ background: 'linear-gradient(180deg, rgba(0,168,255,.08), var(--bg-muted))', borderBottom: '1px solid var(--border-strong)' }}>
               {columns.map(col => (
                 <th
                   key={col.key || col.accessor}
@@ -311,10 +311,10 @@ export function Table({ columns, rows, onRowClick, emptyMessage = 'No data' }) {
                   borderBottom: '1px solid var(--border)',
                   cursor: onRowClick ? 'pointer' : 'default',
                   transition: 'background .1s',
-                  background: i % 2 === 0 ? 'var(--bg)' : 'var(--bg-surface)',
+                  background: i % 2 === 0 ? 'var(--bg)' : 'var(--bg-muted)',
                 }}
-                onMouseEnter={e => onRowClick && (e.currentTarget.style.background = 'var(--ocean-bg)')}
-                onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? 'var(--bg)' : 'var(--bg-surface)')}
+                onMouseEnter={e => onRowClick && (e.currentTarget.style.background = 'rgba(0,168,255,.10)')}
+                onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? 'var(--bg)' : 'var(--bg-muted)')}
               >
                 {columns.map(col => (
                   <td key={col.key || col.accessor} style={{
@@ -358,7 +358,7 @@ export function Modal({ open, onClose, title, children, width = 480, footer }) {
       }}
     >
       <div style={{
-        background: 'var(--bg)', borderRadius: 'var(--radius-lg)',
+        background: 'var(--bg)', borderRadius: 'var(--radius-lg)' ,
         width: '100%', maxWidth: width, maxHeight: '90vh',
         display: 'flex', flexDirection: 'column',
         boxShadow: 'var(--shadow-lg)', animation: 'fadeIn .2s ease',

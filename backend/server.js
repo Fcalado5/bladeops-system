@@ -13,7 +13,8 @@ const pilotsRoutes        = require('./routes/pilots.routes');
 const aircraftRoutes      = require('./routes/aircraft.routes');
 const destinationsRoutes  = require('./routes/destinations.routes');
 const dayOperationsRoutes = require('./routes/dayOperations.routes');
-const flightsRoutes       = require('./routes/flights.routes');
+const tripsRoutes         = require('./routes/trips.routes');
+const flightsRoutes       = require('./routes/flights.routes');   // ← ADICIONADO
 const exportRoutes        = require('./routes/export.routes');
 const alertsRoutes        = require('./routes/alerts.routes');
 const editLogsRoutes      = require('./routes/editLogs.routes');
@@ -71,7 +72,8 @@ app.use('/api/pilots',         pilotsRoutes);
 app.use('/api/aircraft',       aircraftRoutes);
 app.use('/api/destinations',   destinationsRoutes);
 app.use('/api/day-operations', dayOperationsRoutes);
-app.use('/api/flights',        flightsRoutes);
+app.use('/api/trips',          tripsRoutes);
+app.use('/api/flights',        flightsRoutes);        // ← ADICIONADO
 app.use('/api/export',         exportRoutes);
 app.use('/api/alerts',         alertsRoutes);
 app.use('/api/edit-logs',      editLogsRoutes);
@@ -96,7 +98,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, '127.0.0.1', () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 BladeOps running on port ${PORT}`);
   console.log(`   ENV: ${process.env.NODE_ENV || 'development'}`);
   console.log(`   API: http://localhost:${PORT}/api\n`);

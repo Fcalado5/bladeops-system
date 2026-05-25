@@ -1,0 +1,36 @@
+BladeOps UI adjustments made by ChatGPT
+
+1. Dark OCC theme strengthened in src/styles/global.css
+   - Replaced light/ocean variables with dark graphite/navy operational palette.
+   - Improved text hierarchy: primary, secondary, muted and faint text levels.
+   - Improved background, border, elevated card and shadow tokens.
+   - Added dark-mode polish for cards, panels, inputs, tables and selections.
+
+2. Shared UI components refined in src/components/ui/index.js
+   - Cards now use elevated dark surfaces.
+   - Tables now use dark operational styling instead of bright spreadsheet look.
+   - Buttons, ghost buttons, inputs and hover states adjusted for dark OCC interface.
+
+3. Sidebar improved in src/components/layout/Sidebar.js
+   - Sidebar labels and groups are more readable.
+   - Active sector and VMC/CAVOK text contrast improved.
+   - Preserved minimal aviation/OCC direction.
+
+4. TopBar improved in src/components/layout/TopBar.js
+   - Subtitles, UTC label and operational metadata are now more visible.
+   - Maintains premium dark aviation topbar.
+
+5. Day Operations improved in src/pages/DayOperations/DayOperationDetailPage.js
+   - Secondary labels/text are more readable.
+   - Cargo Weight metric added to the main live operational metrics area.
+   - Cargo Weight now appears alongside Fuel onboard, PAX onboard, PAX weight and Block time.
+
+Security/cleanup:
+- Removed .env from this ZIP.
+- Removed .DS_Store and __MACOSX artifacts.
+
+How to use:
+- Backup your current frontend folder first.
+- Replace your current frontend with this folder, or copy only the modified files listed above.
+- Run npm install if node_modules is not present.
+- Run npm start to test.

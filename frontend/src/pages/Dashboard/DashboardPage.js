@@ -51,9 +51,18 @@ export default function DashboardPage() {
           </p>
         </div>
         <Link to="/day-operations">
-          <Button variant="ghost" style={{ borderColor:'rgba(255,255,255,.4)', color:'#fff' }}>
-            Today's Operations →
-          </Button>
+        <Button
+  variant="ghost"
+  style={{
+    background: '#ffffff',
+    borderColor: 'rgba(255,255,255,.65)',
+    color: '#0f4c81',
+    fontWeight: 800,
+    boxShadow: '0 8px 20px rgba(0,0,0,.12)',
+  }}
+>
+  Today's Operations →
+</Button>
         </Link>
       </div>
 

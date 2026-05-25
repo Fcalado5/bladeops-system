@@ -17,26 +17,45 @@ function fmtMin(m) {
 }
 
 export default function DayOperationsPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isPilot, user } = useAuth();
   const { success, error: showError } = useAlert();
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
-  const { data: ops, loading, refetch } = useFetch(() => dayOpsAPI.list({ limit: 50 }));
-  const { data: pilotsData } = useFetch(() => pilotsAPI.list());
-  const { data: acData }     = useFetch(() => aircraftAPI.list());
+  const { data: ops,      loading, refetch } = useFetch(() => dayOpsAPI.list({ limit: 50 }));
+  const { data: todayOps }                   = useFetch(() => dayOpsAPI.list({ limit: 100, online: true }));
+  const { data: pilotsData }                 = useFetch(() => pilotsAPI.list());
+  const { data: acData }                     = useFetch(() => aircraftAPI.list());
 
-  const pilots   = pilotsData?.filter(p => p.role === 'pilot' && p.active) || [];
-  const copilots = pilotsData?.filter(p => p.role === 'copilot' && p.active) || [];
-  const aircraft = acData?.filter(a => a.active) || [];
+  const pilots   = (pilotsData || []).filter(p => p.role === 'pilot'   && p.active);
+  const copilots = (pilotsData || []).filter(p => p.role === 'copilot' && p.active);
+  const aircraft = (acData     || []).filter(a => a.active);
+
+  const myPilot = (pilotsData || []).find(p => p.user_id === user?.id);
 
   const today = new Date().toISOString().split('T')[0];
   const now   = `${String(new Date().getHours()).padStart(2,'0')}:${String(new Date().getMinutes()).padStart(2,'0')}`;
+
+  // Copilotos já em serviço hoje (usa todayOps que tem TODAS as operações abertas)
+  const busyCopilotIds = (todayOps || [])
+    .map(op => op.copilot_pilot_id)
+    .filter(Boolean);
+
+  const availableCopilots = copilots.filter(p => !busyCopilotIds.includes(p.id));
 
   const form = useForm({
     commanderId: '', copilotId: '', aircraftId: '',
     motorOnTime: now, initialFuelLbs: 1500, date: today,
   });
+
+  const openModal = () => {
+    form.reset({
+      commanderId:    isPilot && myPilot ? String(myPilot.id) : '',
+      copilotId:      '', aircraftId: '',
+      motorOnTime:    now, initialFuelLbs: 1500, date: today,
+    });
+    setShowModal(true);
+  };
 
   const handleCreate = useCallback(async (values) => {
     if (!values.commanderId || !values.copilotId || !values.aircraftId) {
@@ -64,37 +83,33 @@ export default function DayOperationsPage() {
   }, [navigate, success, showError, refetch]);
 
   const columns = [
-    { header: 'Date',       accessor: 'date',           render: r => new Date(r.date).toLocaleDateString('pt-PT') },
-    { header: 'Aircraft',   accessor: 'aircraft_reg' },
-    { header: 'Commander',  accessor: 'commander_name' },
-    { header: 'Copilot',    accessor: 'copilot_name' },
-    { header: 'Flights',    accessor: 'flight_count' },
+    { header: 'Data',       accessor: 'date',           render: r => new Date(r.date).toLocaleDateString('pt-PT') },
+    { header: 'Aeronave',   accessor: 'aircraft_reg' },
+    { header: 'Comandante', accessor: 'commander_name' },
+    { header: 'Copiloto',   accessor: 'copilot_name' },
+    { header: 'Voos',       accessor: 'flight_count' },
     { header: 'Block Time', accessor: 'total_block_minutes', render: r => fmtMin(r.total_block_minutes) },
     { header: 'PAX',        accessor: 'total_passengers' },
     { header: 'Fuel Burn',  accessor: 'total_fuel_burn_lbs', render: r => r.total_fuel_burn_lbs ? `${r.total_fuel_burn_lbs.toLocaleString()} lbs` : '—' },
-    { header: 'Status',     accessor: 'status', render: r => <Badge type={r.status}>{r.status}</Badge> },
+    { header: 'Estado',     accessor: 'status', render: r => <Badge type={r.status}>{r.status}</Badge> },
   ];
 
-  if (loading) return <PageLoader label="Loading operations…" />;
+  if (loading) return <PageLoader label="A carregar operações…" />;
 
   return (
     <div className="animate-fade">
       <SectionHeader
         title="Day Operations"
-        subtitle="Manage daily flight operations and TECHLOG records"
-        action={
-          <Button onClick={() => setShowModal(true)} icon="+">
-            New Day Operation
-          </Button>
-        }
+        subtitle="Gestão de operações diárias e registos TECHLOG"
+        action={<Button onClick={openModal} icon="+">Nova Operação</Button>}
       />
 
       <Card padding={0}>
         {(ops || []).length === 0 ? (
           <EmptyState
-            icon="📋" title="No operations yet"
-            description="Start a new day operation to begin tracking flights."
-            action={<Button onClick={() => setShowModal(true)}>Start Operation</Button>}
+            icon="📋" title="Sem operações"
+            description="Inicia uma nova operação para começar."
+            action={<Button onClick={openModal}>Iniciar Operação</Button>}
           />
         ) : (
           <Table
@@ -108,54 +123,72 @@ export default function DayOperationsPage() {
       <Modal
         open={showModal}
         onClose={() => setShowModal(false)}
-        title="New Day Operation"
+        title="Nova Operação Diária"
         width={500}
         footer={
           <>
-            <Button variant="ghost" onClick={() => setShowModal(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setShowModal(false)}>Cancelar</Button>
             <Button loading={form.loading} onClick={() => form.submit(handleCreate)}>
-              Open Operation
+              Abrir Operação
             </Button>
           </>
         }
       >
-        <Field label="Date" required>
+        <Field label="Data" required>
           <Input type="date" name="date" value={form.values.date} onChange={form.onChange} />
         </Field>
-        <Field label="Commander" required>
-          <Select name="commanderId" value={form.values.commanderId} onChange={form.onChange}>
-            <option value="">— Select commander —</option>
-            {pilots.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.name}{p.flight_status === 'not_apt' ? ' ⚠️' : ''}
-              </option>
-            ))}
-          </Select>
+
+        <Field label="Comandante" required>
+          {isPilot && myPilot ? (
+            <Input value={myPilot.name} disabled />
+          ) : (
+            <Select name="commanderId" value={form.values.commanderId} onChange={form.onChange}>
+              <option value="">— Seleccionar comandante —</option>
+              {pilots.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.name}{p.flightStatus === 'not_apt' ? ' ⚠️' : ''}
+                </option>
+              ))}
+            </Select>
+          )}
         </Field>
-        <Field label="Copilot" required>
+
+        <Field label="Copiloto" required>
           <Select name="copilotId" value={form.values.copilotId} onChange={form.onChange}>
-            <option value="">— Select copilot —</option>
-            {copilots.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
+            <option value="">— Seleccionar copiloto —</option>
+            {availableCopilots.length === 0 ? (
+              <option disabled>Nenhum copiloto disponível hoje</option>
+            ) : (
+              availableCopilots.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))
+            )}
           </Select>
         </Field>
-        <Field label="Aircraft" required>
+
+        <Field label="Aeronave" required>
           <Select name="aircraftId" value={form.values.aircraftId} onChange={form.onChange}>
-            <option value="">— Select aircraft —</option>
+            <option value="">— Seleccionar aeronave —</option>
             {aircraft.map(a => (
               <option key={a.id} value={a.id}>{a.registration} · {a.type}</option>
             ))}
           </Select>
         </Field>
+
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
-          <Field label="Motor ON time" required>
+          <Field label="Motor ON" required>
             <Input type="time" name="motorOnTime" value={form.values.motorOnTime} onChange={form.onChange} />
           </Field>
-          <Field label="Initial fuel (lbs)" required>
+          <Field label="Fuel inicial (lbs)" required>
             <Input type="number" name="initialFuelLbs" value={form.values.initialFuelLbs} onChange={form.onChange} min={0} />
           </Field>
         </div>
+
+        {availableCopilots.length === 0 && (
+          <div style={{ marginTop:10, padding:'8px 12px', background:'var(--warning-bg)', border:'1px solid var(--warning-border)', borderRadius:8, fontSize:12, color:'var(--warning)' }}>
+            ⚠️ Todos os copilotos estão em serviço hoje.
+          </div>
+        )}
       </Modal>
     </div>
   );

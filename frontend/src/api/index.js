@@ -41,19 +41,21 @@ export const destinationsAPI = {
 
 // ── DAY OPERATIONS ────────────────────────────────────────────────────────
 export const dayOpsAPI = {
-  list:   (params)           => client.get('/day-operations', { params }),
-  get:    (id)               => client.get(`/day-operations/${id}`),
-  create: (data)             => client.post('/day-operations', data),
-  close:  (id, motorOffTime) => client.patch(`/day-operations/${id}/close`, { motorOffTime }),
-  sign:   (id)               => client.patch(`/day-operations/${id}/sign`),
+  list:    (params) => client.get('/day-operations', { params }),
+  get:     (id)     => client.get(`/day-operations/${id}`),
+  create:  (data)   => client.post('/day-operations', data),
+  close:   (id, data) => client.patch(`/day-operations/${id}/close`, data),
+  sign:    (id)     => client.patch(`/day-operations/${id}/sign`),
+  addFuel: (id, data) => client.patch(`/day-operations/${id}/addfuel`, data),
+  reopen: (id) => client.patch(`/day-operations/${id}/reopen`),
 };
 
 // ── FLIGHTS ───────────────────────────────────────────────────────────────
 export const flightsAPI = {
-  get:    (id)               => client.get(`/flights/${id}`),
-  create: (data)             => client.post('/flights', data),
-  arrive: (id, arrivalTime)  => client.patch(`/flights/${id}/arrive`, { arrivalTime }),
-  update: (id, data)         => client.put(`/flights/${id}`, data),
+  get:    (id)       => client.get(`/flights/${id}`),
+  create: (data)     => client.post('/flights', data),
+  arrive: (id, data) => client.patch(`/flights/${id}/arrive`, data),
+  update: (id, data) => client.put(`/flights/${id}`, data),
 };
 
 // ── ALERTS ────────────────────────────────────────────────────────────────
@@ -69,4 +71,10 @@ export const exportAPI = {
 // ── EDIT LOGS ─────────────────────────────────────────────────────────────
 export const editLogsAPI = {
   list: (params) => client.get('/edit-logs', { params }),
+};
+// ── TRIPS ─────────────────────────────────────────────────────────────────
+export const tripsAPI = {
+  list:     (dayOpId) => client.get('/trips', { params: { dayOpId } }),
+  rotorOn:  (dayOpId, time) => client.post('/trips', { dayOpId, rotorOnTime: time }),
+  rotorOff: (tripId, time)  => client.patch(`/trips/${tripId}/rotoroff`, { rotorOffTime: time }),
 };

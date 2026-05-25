@@ -16,19 +16,17 @@ router.get('/', async (req, res) => {
        JOIN users u ON p.user_id = u.id
        ORDER BY p.role, p.name`
     );
-
     const pilots = result.rows.map(p => ({
       ...p,
       flightStatus: isPilotAptToFly(p) ? 'apt' : 'not_apt',
       docStatuses: {
-        license: checkDocExpiry(p.license_expiry),
-        medical: checkDocExpiry(p.medical_class1_expiry),
-        huet: checkDocExpiry(p.huet_expiry),
-        bosiet: checkDocExpiry(p.bosiet_expiry),
+        license:     checkDocExpiry(p.license_expiry),
+        medical:     checkDocExpiry(p.medical_class1_expiry),
+        huet:        checkDocExpiry(p.huet_expiry),
+        bosiet:      checkDocExpiry(p.bosiet_expiry),
         annualCheck: checkDocExpiry(p.annual_check_expiry),
       },
     }));
-
     res.json(pilots);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch pilots' });
@@ -45,16 +43,15 @@ router.get('/:id', async (req, res) => {
       [req.params.id]
     );
     if (!result.rows[0]) return res.status(404).json({ error: 'Pilot not found' });
-
     const p = result.rows[0];
     res.json({
       ...p,
       flightStatus: isPilotAptToFly(p) ? 'apt' : 'not_apt',
       docStatuses: {
-        license: checkDocExpiry(p.license_expiry),
-        medical: checkDocExpiry(p.medical_class1_expiry),
-        huet: checkDocExpiry(p.huet_expiry),
-        bosiet: checkDocExpiry(p.bosiet_expiry),
+        license:     checkDocExpiry(p.license_expiry),
+        medical:     checkDocExpiry(p.medical_class1_expiry),
+        huet:        checkDocExpiry(p.huet_expiry),
+        bosiet:      checkDocExpiry(p.bosiet_expiry),
         annualCheck: checkDocExpiry(p.annual_check_expiry),
       },
     });
@@ -70,7 +67,7 @@ router.post('/', requireAdmin, async (req, res) => {
       name, email, password, role, aircraftAssigned, phone,
       totalHours, hoursAw169, licenseNumber, licenseType,
       licenseExpiry, medicalClass1Expiry, huetExpiry,
-      bosietExpiry, annualCheckExpiry,
+      bosietExpiry, annualCheckExpiry, weightLbs,
     } = req.body;
 
     if (!name || !email || !password || !role) {
@@ -78,7 +75,7 @@ router.post('/', requireAdmin, async (req, res) => {
     }
 
     await transaction(async (client) => {
-      const hash = await bcrypt.hash(password, 12);
+      const hash     = await bcrypt.hash(password, 12);
       const initials = name.split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase();
 
       const userResult = await client.query(
@@ -91,8 +88,9 @@ router.post('/', requireAdmin, async (req, res) => {
       await client.query(
         `INSERT INTO pilots (user_id, name, email, role, aircraft_assigned, phone,
            total_hours, hours_aw169, license_number, license_type,
-           license_expiry, medical_class1_expiry, huet_expiry, bosiet_expiry, annual_check_expiry)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+           license_expiry, medical_class1_expiry, huet_expiry, bosiet_expiry,
+           annual_check_expiry, weight_lbs)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
         [
           userId, name, email.toLowerCase(), role,
           aircraftAssigned || null, phone || null,
@@ -100,6 +98,7 @@ router.post('/', requireAdmin, async (req, res) => {
           licenseNumber || null, licenseType || null,
           licenseExpiry || null, medicalClass1Expiry || null,
           huetExpiry || null, bosietExpiry || null, annualCheckExpiry || null,
+          weightLbs || 187,
         ]
       );
     });
@@ -117,7 +116,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
     const {
       name, role, aircraftAssigned, phone, totalHours, hoursAw169,
       licenseNumber, licenseType, licenseExpiry, medicalClass1Expiry,
-      huetExpiry, bosietExpiry, annualCheckExpiry, active, password,
+      huetExpiry, bosietExpiry, annualCheckExpiry, active, password, weightLbs,
     } = req.body;
 
     await transaction(async (client) => {
@@ -126,8 +125,9 @@ router.put('/:id', requireAdmin, async (req, res) => {
            name=$1, role=$2, aircraft_assigned=$3, phone=$4,
            total_hours=$5, hours_aw169=$6, license_number=$7, license_type=$8,
            license_expiry=$9, medical_class1_expiry=$10, huet_expiry=$11,
-           bosiet_expiry=$12, annual_check_expiry=$13, active=$14, updated_at=NOW()
-         WHERE id=$15`,
+           bosiet_expiry=$12, annual_check_expiry=$13, active=$14,
+           weight_lbs=$15, updated_at=NOW()
+         WHERE id=$16`,
         [
           name, role, aircraftAssigned || null, phone || null,
           totalHours || 0, hoursAw169 || 0,
@@ -135,6 +135,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
           licenseExpiry || null, medicalClass1Expiry || null,
           huetExpiry || null, bosietExpiry || null, annualCheckExpiry || null,
           active !== undefined ? active : true,
+          weightLbs || 187,
           req.params.id,
         ]
       );

@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from 'react';
-import { pilotsAPI } from '../../api';
+import { pilotsAPI, dayOpsAPI } from '../../api';
 import { useFetch } from '../../hooks/useFetch';
 import { useForm } from '../../hooks/useForm';
 import { useAlert } from '../../context/AlertContext';
 import { useAuth } from '../../context/AuthContext';
 import {
   SectionHeader, Button, Badge, Card, Modal, Field, Input, Select,
-  PageLoader, EmptyState, AlertBanner, ConfirmModal,
+  PageLoader, EmptyState, ConfirmModal,
 } from '../../components/ui';
 
 const DOC_FIELDS = [
@@ -17,8 +17,7 @@ const DOC_FIELDS = [
   { key: 'annualCheckExpiry',   label: 'Annual Check AW169', apiKey: 'annual_check_expiry',   statusKey: 'annualCheck' },
 ];
 
-// FIXED: usa statusKey correcto que bate com o backend
-function docBadge(docStatuses, statusKey, apiDate) {
+function docBadge(docStatuses, statusKey) {
   const s = docStatuses?.[statusKey]?.status;
   if (!s || s === 'missing') return <Badge type="danger">Missing</Badge>;
   if (s === 'expired')       return <Badge type="danger">Expired</Badge>;
@@ -26,19 +25,104 @@ function docBadge(docStatuses, statusKey, apiDate) {
   return <Badge type="success">Valid</Badge>;
 }
 
+function timeOnline(motorOnTime) {
+  if (!motorOnTime) return '—';
+  const [h, m] = motorOnTime.split(':').map(Number);
+  const now = new Date();
+  const start = new Date();
+  start.setHours(h, m, 0, 0);
+  const diff = Math.max(0, Math.floor((now - start) / 60000));
+  const hours = Math.floor(diff / 60);
+  const mins  = diff % 60;
+  if (hours > 0) return `${hours}h ${String(mins).padStart(2,'0')}m em serviço`;
+  return `${mins}m em serviço`;
+}
+
+function OnlinePilotsView({ pilots, ops }) {
+  const today = new Date().toISOString().split('T')[0];
+
+  // O backend já filtrou por hoje e open, mas fazemos double-check
+  const openOpsToday = (ops || []).filter(op => op.status === 'open');
+
+  const onlineNames = new Set([
+    ...openOpsToday.map(op => op.commander_name).filter(Boolean),
+    ...openOpsToday.map(op => op.copilot_name).filter(Boolean),
+  ]);
+
+  const onlinePilots = (pilots || []).filter(p => onlineNames.has(p.name));
+
+  return (
+    <div className="animate-fade">
+      <SectionHeader
+        title="Tripulação em Serviço"
+        subtitle={`${onlinePilots.length} piloto(s) com dia aberto hoje`}
+      />
+      {onlinePilots.length === 0 ? (
+        <Card>
+          <EmptyState icon="✈️" title="Nenhum piloto em serviço"
+            description="Ainda não foi aberto nenhum dia de operações hoje." />
+        </Card>
+      ) : (
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:16 }}>
+          {onlinePilots.map(p => {
+            const op = openOpsToday.find(o => o.commander_name === p.name || o.copilot_name === p.name);
+            return (
+              <Card key={p.id} style={{ border:'1px solid var(--ocean-light)' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                  <div style={{
+                    width:48, height:48, borderRadius:'50%', flexShrink:0,
+                    background:'linear-gradient(135deg,var(--ocean-dark),var(--ocean))',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    fontSize:16, fontWeight:700, color:'#fff',
+                  }}>
+                    {p.name.split(' ').map(x => x[0]).join('').slice(0,2)}
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:15, fontWeight:700, color:'var(--text)' }}>{p.name}</div>
+                    <div style={{ fontSize:12, color:'var(--text-muted)', marginTop:2 }}>
+                      <Badge type={p.role}>{p.role}</Badge>{' · '}{p.aircraft_assigned || '—'}
+                    </div>
+                  </div>
+                  <div style={{
+                    width:10, height:10, borderRadius:'50%',
+                    background:'var(--success)', flexShrink:0,
+                    boxShadow:'0 0 6px var(--success)',
+                  }} />
+                </div>
+                {op && (
+                  <div style={{ marginTop:12, padding:'8px 10px', background:'var(--bg-muted)', borderRadius:8, fontSize:12, color:'var(--text-sec)' }}>
+                    🕐 {timeOnline(op.motor_on_time)}{' · '}✈️ {op.aircraft_reg || '—'}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PilotsPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isPilot } = useAuth();
   const { success, error: showError } = useAlert();
-  const [showModal,   setShowModal]   = useState(false);
-  const [editing,     setEditing]     = useState(null);
-  const [expanded,    setExpanded]    = useState(null);
+  const [showModal,     setShowModal]     = useState(false);
+  const [editing,       setEditing]       = useState(null);
+  const [expanded,      setExpanded]      = useState(null);
   const [confirmToggle, setConfirmToggle] = useState(null);
 
-  const { data: pilots, loading, refetch } = useFetch(() => pilotsAPI.list());
+  const { data: pilots, loading,        refetch } = useFetch(() => pilotsAPI.list());
+  // ← online: true para buscar TODOS os pilotos com dia aberto hoje
+  const { data: ops,    loading: opsLoad }        = useFetch(() => dayOpsAPI.list({ limit: 100, online: true }));
+
+  if (isPilot) {
+    if (loading || opsLoad) return <PageLoader label="A carregar…" />;
+    return <OnlinePilotsView pilots={pilots} ops={ops} />;
+  }
 
   const EMPTY = {
     name:'', email:'', password:'', role:'pilot', aircraftAssigned:'',
-    phone:'', totalHours:0, hoursAw169:0,
+    phone:'', totalHours:0, hoursAw169:0, weightLbs:187,
     licenseNumber:'', licenseType:'ATPL/H',
     licenseExpiry:'', medicalClass1Expiry:'',
     huetExpiry:'', bosietExpiry:'', annualCheckExpiry:'',
@@ -51,13 +135,13 @@ export default function PilotsPage() {
       name: p.name, email: p.email, password: '',
       role: p.role, aircraftAssigned: p.aircraft_assigned || '',
       phone: p.phone || '', totalHours: p.total_hours || 0,
-      hoursAw169: p.hours_aw169 || 0,
+      hoursAw169: p.hours_aw169 || 0, weightLbs: p.weight_lbs || 187,
       licenseNumber: p.license_number || '', licenseType: p.license_type || 'ATPL/H',
-      licenseExpiry:       p.license_expiry?.split('T')[0]       || '',
+      licenseExpiry:       p.license_expiry?.split('T')[0]        || '',
       medicalClass1Expiry: p.medical_class1_expiry?.split('T')[0] || '',
-      huetExpiry:          p.huet_expiry?.split('T')[0]          || '',
-      bosietExpiry:        p.bosiet_expiry?.split('T')[0]        || '',
-      annualCheckExpiry:   p.annual_check_expiry?.split('T')[0]  || '',
+      huetExpiry:          p.huet_expiry?.split('T')[0]           || '',
+      bosietExpiry:        p.bosiet_expiry?.split('T')[0]         || '',
+      annualCheckExpiry:   p.annual_check_expiry?.split('T')[0]   || '',
     });
     setEditing(p);
     setShowModal(true);
@@ -69,8 +153,9 @@ export default function PilotsPage() {
       const payload = {
         name: values.name, email: values.email, role: values.role,
         aircraftAssigned: values.aircraftAssigned, phone: values.phone,
-        totalHours: parseInt(values.totalHours) || 0,
-        hoursAw169: parseInt(values.hoursAw169) || 0,
+        totalHours:  parseInt(values.totalHours)  || 0,
+        hoursAw169:  parseInt(values.hoursAw169)  || 0,
+        weightLbs:   parseInt(values.weightLbs)   || 187,
         licenseNumber: values.licenseNumber, licenseType: values.licenseType,
         licenseExpiry:       values.licenseExpiry       || null,
         medicalClass1Expiry: values.medicalClass1Expiry || null,
@@ -79,7 +164,6 @@ export default function PilotsPage() {
         annualCheckExpiry:   values.annualCheckExpiry   || null,
       };
       if (values.password) payload.password = values.password;
-
       if (editing) {
         await pilotsAPI.update(editing.id, payload);
         success('Pilot updated');
@@ -95,7 +179,6 @@ export default function PilotsPage() {
     }
   }, [editing, success, showError, refetch]);
 
-  // FIXED: confirmação antes de desactivar
   const handleToggle = useCallback(async (pilot) => {
     try {
       await pilotsAPI.toggle(pilot.id);
@@ -118,13 +201,13 @@ export default function PilotsPage() {
         <Card>
           <EmptyState icon="👤" title="No pilots registered"
             description="Add pilots to get started."
-            action={isAdmin && <Button onClick={openCreate}>Add Pilot</Button>}
+            action={<Button onClick={openCreate}>Add Pilot</Button>}
           />
         </Card>
       ) : (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(340px,1fr))', gap:16 }}>
           {(pilots || []).map(p => (
-            <Card key={p.id} style={{ border: p.flight_status === 'not_apt' ? '1.5px solid var(--danger-border)' : '1px solid var(--border)' }}>
+            <Card key={p.id} style={{ border: p.flightStatus === 'not_apt' ? '1.5px solid var(--danger-border)' : '1px solid var(--border)' }}>
               <div style={{ display:'flex', alignItems:'flex-start', gap:12, marginBottom:12 }}>
                 <div style={{
                   width:44, height:44, borderRadius:'50%', flexShrink:0,
@@ -137,17 +220,17 @@ export default function PilotsPage() {
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:15, fontWeight:700, color:'var(--text)' }}>{p.name}</div>
                   <div style={{ fontSize:12, color:'var(--text-muted)', marginTop:1 }}>
-                    <Badge type={p.role}>{p.role}</Badge>
-                    {' · '}{p.aircraft_assigned || '—'}
+                    <Badge type={p.role}>{p.role}</Badge>{' · '}{p.aircraft_assigned || '—'}
                   </div>
                 </div>
-                <Badge type={p.flight_status}>{p.flight_status === 'apt' ? 'Apt to Fly' : 'Not Apt'}</Badge>
+                <Badge type={p.flightStatus}>{p.flightStatus === 'apt' ? 'Apt to Fly' : 'Not Apt'}</Badge>
               </div>
 
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10, fontSize:12, color:'var(--text-sec)' }}>
                 <div>Total hrs: <strong style={{ color:'var(--text)' }}>{p.total_hours || 0}h</strong></div>
                 <div>AW169 hrs: <strong style={{ color:'var(--text)' }}>{p.hours_aw169 || 0}h</strong></div>
-                {p.phone && <div style={{ gridColumn:'1/-1' }}>📞 {p.phone}</div>}
+                <div>Peso: <strong style={{ color:'var(--text)' }}>{p.weight_lbs || 187} lbs</strong></div>
+                {p.phone && <div>📞 {p.phone}</div>}
               </div>
 
               <button onClick={() => setExpanded(expanded === p.id ? null : p.id)}
@@ -166,8 +249,7 @@ export default function PilotsPage() {
                             {new Date(p[df.apiKey]).toLocaleDateString('pt-PT')}
                           </span>
                         )}
-                        {/* FIXED: passa statusKey correcto */}
-                        {docBadge(p.docStatuses, df.statusKey, p[df.apiKey])}
+                        {docBadge(p.docStatuses, df.statusKey)}
                       </div>
                     </div>
                   ))}
@@ -177,7 +259,6 @@ export default function PilotsPage() {
               {isAdmin && (
                 <div style={{ display:'flex', gap:8, marginTop:10, borderTop:'1px solid var(--border)', paddingTop:10 }}>
                   <Button size="sm" variant="ghost" onClick={() => openEdit(p)}>Edit</Button>
-                  {/* FIXED: confirmação antes de desactivar */}
                   <Button size="sm" variant={p.active ? 'subtle' : 'success'}
                     onClick={() => p.active ? setConfirmToggle(p) : handleToggle(p)}>
                     {p.active ? 'Deactivate' : 'Activate'}
@@ -189,7 +270,6 @@ export default function PilotsPage() {
         </div>
       )}
 
-      {/* FIXED: modal de confirmação para desactivar */}
       <ConfirmModal
         open={!!confirmToggle}
         onClose={() => setConfirmToggle(null)}
@@ -200,7 +280,6 @@ export default function PilotsPage() {
         variant="danger"
       />
 
-      {/* Create / Edit Modal */}
       <Modal
         open={showModal}
         onClose={() => setShowModal(false)}
@@ -241,6 +320,9 @@ export default function PilotsPage() {
           <Field label="AW169 hours">
             <Input type="number" name="hoursAw169" value={form.values.hoursAw169} onChange={form.onChange} min={0} />
           </Field>
+          <Field label="Peso do piloto (lbs)">
+            <Input type="number" name="weightLbs" value={form.values.weightLbs} onChange={form.onChange} min={100} max={300} />
+          </Field>
           <Field label="Licence number">
             <Input name="licenseNumber" value={form.values.licenseNumber} onChange={form.onChange} placeholder="ATPL/H-2021" />
           </Field>
@@ -251,7 +333,6 @@ export default function PilotsPage() {
             </Select>
           </Field>
         </div>
-
         <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid var(--border)' }}>
           <div style={{ fontSize:11, fontWeight:700, color:'var(--ocean)', textTransform:'uppercase', letterSpacing:'.06em', marginBottom:10 }}>
             Document expiry dates

@@ -1,93 +1,360 @@
 /* =========================================
-   BLADEOPS — Global Styles
+   BLADEOPS — Global Styles + Full Responsive
+   Dark OCC Aviation Theme
    ========================================= */
 
-:root {
-  --ocean-darkest: #011F5B;
-  --ocean-dark:    #023E8A;
-  --ocean:         #0077B6;
-  --ocean-mid:     #0096C7;
-  --ocean-light:   #90E0EF;
-  --ocean-pale:    #CAF0F8;
-  --ocean-bg:      #F0F8FF;
-
-  --success:       #1A936F;
-  --success-bg:    #E6F7F1;
-  --success-border:#A8DCC5;
-
-  --warning:       #E9A500;
-  --warning-bg:    #FFF8E7;
-  --warning-border:#FFDD9E;
-
-  --danger:        #C1121F;
-  --danger-bg:     #FDE8E8;
-  --danger-border: #F5AAAA;
-
-  --info-bg:       #EEF6FF;
-  --info-border:   #BDD7EE;
-
-  --text:          #0D1B2A;
-  --text-sec:      #4A5568;
-  --text-muted:    #718096;
-
-  --border:        #D0E4F0;
-  --border-strong: #A0BDD4;
-
-  --bg:            #FFFFFF;
-  --bg-surface:    #F7FBFF;
-  --bg-muted:      #EEF4FA;
-
-  --sidebar-w:     240px;
-  --topbar-h:      60px;
-  --radius:        10px;
-  --radius-sm:     6px;
-  --radius-lg:     14px;
-
-  --shadow-sm:     0 1px 3px rgba(0,60,120,.08);
-  --shadow:        0 4px 16px rgba(0,60,120,.10);
-  --shadow-lg:     0 8px 32px rgba(0,60,120,.14);
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { font-size: 14px; }
-
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--bg-surface);
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-
-a { color: inherit; text-decoration: none; }
-button { cursor: pointer; font-family: inherit; }
-input, select, textarea { font-family: inherit; }
-img { max-width: 100%; }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-muted); }
-::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--ocean-mid); }
-
-/* Utilities */
-.sr-only {
-  position: absolute; width: 1px; height: 1px;
-  padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0,0,0,0); border: 0;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-12px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.animate-fade { animation: fadeIn .25s ease; }
+   :root {
+    --ocean-darkest: #06111f;
+    --ocean-dark:    #0a2540;
+    --ocean:         #00a8ff;
+    --ocean-mid:     #00c2ff;
+    --ocean-light:   #70d7ff;
+    --ocean-pale:    rgba(0,168,255,.14);
+    --ocean-bg:      rgba(0,168,255,.08);
+  
+    --success:        #22e58a;
+    --success-bg:     rgba(34,229,138,.11);
+    --success-border: rgba(34,229,138,.32);
+    --warning:        #ffc247;
+    --warning-bg:     rgba(255,194,71,.12);
+    --warning-border: rgba(255,194,71,.34);
+    --danger:         #ff5d5d;
+    --danger-bg:      rgba(255,93,93,.12);
+    --danger-border:  rgba(255,93,93,.34);
+    --info-bg:        rgba(0,168,255,.10);
+    --info-border:    rgba(0,168,255,.28);
+  
+    --text:           #e6f2ff;
+    --text-sec:       #9fbdd7;
+    --text-muted:     #6f8eaa;
+    --text-faint:     #48677f;
+  
+    --border:         rgba(120,190,255,.16);
+    --border-strong:  rgba(120,190,255,.28);
+    --bg:             #0b1728;
+    --bg-surface:     #07111f;
+    --bg-muted:       #101f34;
+    --bg-elevated:    #0e2036;
+  
+    --sidebar-w:      228px;
+    --topbar-h:       60px;
+    --radius:         10px;
+    --radius-sm:      6px;
+    --radius-lg:      14px;
+    --shadow-sm:      0 8px 24px rgba(0,0,0,.22);
+    --shadow:         0 14px 40px rgba(0,0,0,.28);
+    --shadow-lg:      0 22px 70px rgba(0,0,0,.42);
+    --touch-min:      48px;
+    --page-px:        24px;
+    --page-px-sm:     16px;
+    --page-px-xs:     12px;
+  }
+  
+  /* ── Reset ─────────────────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html  { font-size: 14px; -webkit-text-size-adjust: 100%; }
+  body  {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top left, rgba(0,168,255,.08), transparent 34%), var(--bg-surface);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a        { color: inherit; text-decoration: none; }
+  button   { cursor: pointer; font-family: inherit; }
+  input, select, textarea { font-family: inherit; }
+  img      { max-width: 100%; }
+  
+  /* ── Scrollbar ─────────────────────────────────────────────────────────── */
+  ::-webkit-scrollbar       { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg-muted); }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ocean-mid); }
+  
+  /* ── Utilities ─────────────────────────────────────────────────────────── */
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); border: 0;
+  }
+  .animate-fade { animation: fadeIn .25s ease; }
+  .truncate     { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  
+  /* ── Animations ────────────────────────────────────────────────────────── */
+  @keyframes fadeIn  { from { opacity:0; transform:translateY(8px); }  to { opacity:1; transform:translateY(0); } }
+  @keyframes slideIn { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes slideUp { from { opacity:0; transform:translateY(20px); }  to { opacity:1; transform:translateY(0); } }
+  @keyframes spin    { to { transform:rotate(360deg); } }
+  @keyframes live    { 0%,100%{opacity:1} 50%{opacity:.3} }
+  
+  /* ── Dark OCC theme overrides ─────────────────────────────────────────── */
+  .card, .panel { background: var(--bg) !important; border-color: var(--border) !important; }
+  input, select, textarea {
+    color: var(--text) !important;
+    background: var(--bg-muted) !important;
+    border-color: var(--border) !important;
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-faint); }
+  table { color: var(--text); }
+  th    { color: var(--text-sec) !important; }
+  td    { color: var(--text) !important; }
+  ::selection { background: rgba(0,168,255,.28); color: #fff; }
+  
+  /* ── Table utilities ───────────────────────────────────────────────────── */
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
+  .table-scroll::-webkit-scrollbar { height: 4px; }
+  .table-scroll table { min-width: 600px; }
+  
+  /* OCC operational table */
+  .occ-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .occ-table th {
+    padding: 9px 13px; text-align: left;
+    font-size: 8.5px; color: var(--text-muted);
+    font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-muted); white-space: nowrap;
+  }
+  .occ-table td {
+    padding: 10px 13px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap; font-size: 12px;
+  }
+  .occ-table tr:hover td { background: rgba(0,148,238,.04); }
+  
+  /* ── Main layout ───────────────────────────────────────────────────────── */
+  .main-content { padding: var(--page-px); }
+  
+  /* ── Section header ────────────────────────────────────────────────────── */
+  .section-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+    margin-bottom: 20px;
+  }
+  
+  /* ── Responsive grid helpers ──────────────────────────────────────────── */
+  .grid-cols-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+  .grid-cols-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .grid-cols-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; }
+  .grid-auto   { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 14px; }
+  
+  /* ── Metric strip ─────────────────────────────────────────────────────── */
+  .metric-strip {
+    display: grid;
+    grid-template-columns: repeat(6,1fr);
+    border-top: 1px solid var(--border);
+  }
+  .metric-strip-4 {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 1px; background: var(--border);
+  }
+  
+  /* ── OCC card ─────────────────────────────────────────────────────────── */
+  .occ-card {
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .occ-card-head {
+    padding: 13px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  
+  /* ── Action buttons ───────────────────────────────────────────────────── */
+  .action-bar {
+    display: flex; gap: 8px;
+    flex-wrap: wrap; align-items: center;
+  }
+  
+  /* ── Status badge ─────────────────────────────────────────────────────── */
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    display: inline-block; flex-shrink: 0;
+  }
+  .status-dot.live   { background: var(--danger);  animation: live 1.4s infinite; }
+  .status-dot.active { background: var(--success); animation: live 1.8s infinite; }
+  .status-dot.idle   { background: var(--text-faint); }
+  
+  /* ─────────────────────────────────────────────────────────────────────────
+     TABLET (≤ 1024px)
+     ───────────────────────────────────────────────────────────────────────── */
+  @media (max-width: 1024px) {
+    :root { --sidebar-w: 220px; --page-px: 18px; }
+  
+    .main-content { padding: var(--page-px) !important; }
+  
+    .grid-cols-4 { grid-template-columns: repeat(2,1fr) !important; }
+    .metric-strip { grid-template-columns: repeat(3,1fr) !important; }
+  
+    /* Touch targets */
+    button, [role="button"] { min-height: 44px; }
+    input, select, textarea {
+      min-height: 44px;
+      font-size: 16px !important;
+    }
+    input[type="checkbox"], input[type="radio"] {
+      width: 20px !important; height: 20px !important; min-height: unset !important;
+    }
+  
+    .occ-table th { font-size: 8px; padding: 8px 10px !important; }
+    .occ-table td { font-size: 11.5px; padding: 9px 10px !important; }
+  }
+  
+  /* ─────────────────────────────────────────────────────────────────────────
+     MOBILE (≤ 768px)
+     ───────────────────────────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    :root { --page-px: 14px; --topbar-h: 56px; }
+  
+    html { font-size: 13px; }
+  
+    .main-content { padding: var(--page-px) !important; }
+  
+    /* All grids → 1 column */
+    .grid-cols-4,
+    .grid-cols-3,
+    .grid-cols-2,
+    .grid-auto  { grid-template-columns: 1fr !important; gap: 10px !important; }
+  
+    /* KPI → 2 columns on mobile */
+    .grid-cols-4.kpi { grid-template-columns: repeat(2,1fr) !important; }
+  
+    /* Metric strip → 2 per row */
+    .metric-strip     { grid-template-columns: repeat(2,1fr) !important; }
+    .metric-strip-4   { grid-template-columns: repeat(2,1fr) !important; }
+  
+    /* Section headers stack */
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    /* Action bar wraps */
+    .action-bar { gap: 6px; }
+    .action-bar > button { font-size: 11px !important; padding: 7px 10px !important; }
+  
+    /* Topbar */
+    .topbar-date     { display: none !important; }
+    .topbar-sys      { display: none !important; }
+    .topbar-title    { font-size: 14px !important; }
+  
+    /* Sidebar overlay */
+    .sidebar-overlay {
+      display: block !important;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.65);
+      z-index: 99;
+      backdrop-filter: blur(2px);
+      animation: fadeIn .2s ease;
+    }
+  
+    /* Modals → bottom sheet */
+    .modal-backdrop {
+      align-items: flex-end !important;
+      padding: 0 !important;
+    }
+    .modal-box {
+      width: 100% !important;
+      max-width: 100% !important;
+      border-radius: 16px 16px 0 0 !important;
+      max-height: 92vh !important;
+    }
+  
+    /* Table scroll */
+    .table-scroll table { min-width: 520px; }
+  
+    /* OCC tables compact */
+    .occ-table th { font-size: 8px; padding: 7px 9px !important; }
+    .occ-table td { font-size: 11px; padding: 8px 9px !important; }
+  
+    /* Form grids → 1 col */
+    .form-grid-2 { grid-template-columns: 1fr !important; }
+  
+    /* Hero status font */
+    .status-hero-text { font-size: 32px !important; }
+    .payload-hero-text { font-size: 32px !important; }
+  
+    /* Timers stack */
+    .timer-row { flex-direction: column !important; }
+  
+    /* Status masthead padding */
+    .status-masthead { padding: 16px 16px !important; }
+  
+    /* Hide low-priority nav items on mobile */
+    .topbar-role-full { display: none !important; }
+  
+    /* Compact cards */
+    .occ-card-head { padding: 10px 14px !important; }
+  
+    /* Touch-friendly nav links */
+    nav a, nav button { min-height: var(--touch-min) !important; }
+  }
+  
+  /* ─────────────────────────────────────────────────────────────────────────
+     SMALL MOBILE (≤ 480px)
+     ───────────────────────────────────────────────────────────────────────── */
+  @media (max-width: 480px) {
+    :root { --page-px: 12px; }
+  
+    .status-hero-text  { font-size: 26px !important; }
+    .payload-hero-text { font-size: 28px !important; }
+    .metric-val-lg     { font-size: 20px !important; }
+  
+    /* KPI cards → 1 column on tiny screens */
+    .grid-cols-4.kpi { grid-template-columns: 1fr !important; }
+  
+    /* Reduce action button text */
+    .action-bar .hide-xs { display: none !important; }
+  }
+  
+  /* ─────────────────────────────────────────────────────────────────────────
+     TABLET PORTRAIT (769–1024px) — 2-column adjustments
+     ───────────────────────────────────────────────────────────────────────── */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .grid-cols-4   { grid-template-columns: repeat(2,1fr) !important; }
+    .grid-cols-3   { grid-template-columns: repeat(2,1fr) !important; }
+    .grid-auto     { grid-template-columns: repeat(2,1fr) !important; }
+    .metric-strip  { grid-template-columns: repeat(3,1fr) !important; }
+  }
+  
+  /* ─────────────────────────────────────────────────────────────────────────
+     DASHBOARD — Responsive 2-col layout
+     ───────────────────────────────────────────────────────────────────────── */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 900px) {
+    .dashboard-grid { grid-template-columns: 1fr !important; }
+  }
+  
+  /* ─────────────────────────────────────────────────────────────────────────
+     OPERATIONAL CARDS — Mobile priority layout
+     ───────────────────────────────────────────────────────────────────────── */
+  .op-metrics-primary   { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .op-metrics-secondary { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 10px; }
+  
+  @media (max-width: 768px) {
+    .op-metrics-primary   { grid-template-columns: repeat(2,1fr) !important; }
+    .op-metrics-secondary { grid-template-columns: repeat(2,1fr) !important; }
+    /* On mobile: hide secondary metrics by default */
+    .op-metrics-secondary.collapse-mobile { display: none !important; }
+    .op-metrics-secondary.collapse-mobile.expanded { display: grid !important; }
+  }
+  
+  /* ─────────────────────────────────────────────────────────────────────────
+     PRINT
+     ───────────────────────────────────────────────────────────────────────── */
+  @media print {
+    body { background: #fff !important; color: #000 !important; }
+    aside, header, .topbar { display: none !important; }
+    .main-content { margin: 0 !important; padding: 0 !important; }
+  }
