@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -14,13 +15,27 @@ const aircraftRoutes      = require('./routes/aircraft.routes');
 const destinationsRoutes  = require('./routes/destinations.routes');
 const dayOperationsRoutes = require('./routes/dayOperations.routes');
 const tripsRoutes         = require('./routes/trips.routes');
-const flightsRoutes       = require('./routes/flights.routes');   // ← ADICIONADO
+const flightsRoutes       = require('./routes/flights.routes');
 const exportRoutes        = require('./routes/export.routes');
 const alertsRoutes        = require('./routes/alerts.routes');
 const editLogsRoutes      = require('./routes/editLogs.routes');
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+app.options('*', cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
 const storageDir = path.join(__dirname, '../storage/reports');
 if (!fs.existsSync(storageDir)) {
@@ -28,49 +43,8 @@ if (!fs.existsSync(storageDir)) {
 }
 
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc:  ["'self'", "'unsafe-inline'"],
-      styleSrc:   ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-      fontSrc:    ["'self'", 'https://fonts.gstatic.com'],
-      imgSrc:     ["'self'", 'data:', 'blob:'],
-      connectSrc: ["'self'"],
-    },
-  },
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
-}));
-
-const allowedOrigins = [
-  'https://bladeops-frontend.vercel.app',
-  'https://bladeops-frontend-git-main-fernando-calado-s-projects.vercel.app',
-  'https://bladeops-frontend-2qybnhxg1-fernando-calado-s-projects.vercel.app',
-  'https://bladeops.ao',
-  'https://app.bladeops.ao'
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
-
-app.options('*', cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
 }));
 
 app.use(compression());
@@ -97,7 +71,7 @@ app.use('/api/aircraft',       aircraftRoutes);
 app.use('/api/destinations',   destinationsRoutes);
 app.use('/api/day-operations', dayOperationsRoutes);
 app.use('/api/trips',          tripsRoutes);
-app.use('/api/flights',        flightsRoutes);        // ← ADICIONADO
+app.use('/api/flights',        flightsRoutes);
 app.use('/api/export',         exportRoutes);
 app.use('/api/alerts',         alertsRoutes);
 app.use('/api/edit-logs',      editLogsRoutes);
@@ -109,13 +83,19 @@ app.get('*', (req, res) => {
       return res.sendFile(indexPath);
     }
   }
+
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
 app.use((err, req, res, next) => {
   console.error('❌ Unhandled error:', err.message);
-  if (process.env.NODE_ENV === 'development') console.error(err.stack);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.error(err.stack);
+  }
+
   const status = err.status || err.statusCode || 500;
+
   res.status(status).json({
     error: err.message || 'Internal server error',
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
